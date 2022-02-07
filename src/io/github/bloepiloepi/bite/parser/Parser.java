@@ -706,6 +706,7 @@ public class Parser {
 		eat(TokenType.IDENTIFIER);
 		
 		ArrayList<TypeSpecification> generics = null;
+		ArrayList<TypeSpecification> parameterTypes = null;
 		if (currentToken.getType() == TokenType.GENERIC) {
 			eat(TokenType.GENERIC);
 			
@@ -718,17 +719,32 @@ public class Parser {
 				} else {
 					Token unknownToken = currentToken;
 					eat(TokenType.UNKNOWN);
-					generics.add(new TypeSpecification(unknownToken, TypeSpecification.UNKNOWN, null));
+					generics.add(new TypeSpecification(unknownToken, TypeSpecification.UNKNOWN, null, null));
 				}
 				
-				while (currentToken.getType() == TokenType.COMMA) {
+				if (currentToken.getType() == TokenType.DOT) {
+					parameterTypes = new ArrayList<>();
+					
+					eat(TokenType.DOT);
+					if (currentToken.getType() == TokenType.LPAREN) {
+						eat(TokenType.LPAREN);
+						
+						parameterTypes.add(typeSpecification(false));
+						while (currentToken.getType() == TokenType.COMMA) {
+							eat(TokenType.COMMA);
+							parameterTypes.add(typeSpecification(false));
+						}
+						
+						eat(TokenType.RPAREN);
+					}
+				} else while (currentToken.getType() == TokenType.COMMA) {
 					eat(TokenType.COMMA);
 					if (currentToken.getType() != TokenType.UNKNOWN) {
 						generics.add(typeSpecification(true));
 					} else {
 						Token unknownToken = currentToken;
 						eat(TokenType.UNKNOWN);
-						generics.add(new TypeSpecification(unknownToken, TypeSpecification.UNKNOWN, null));
+						generics.add(new TypeSpecification(unknownToken, TypeSpecification.UNKNOWN, null, null));
 					}
 				}
 				
@@ -739,12 +755,12 @@ public class Parser {
 				} else {
 					Token unknownToken = currentToken;
 					eat(TokenType.UNKNOWN);
-					generics.add(new TypeSpecification(unknownToken, TypeSpecification.UNKNOWN, null));
+					generics.add(new TypeSpecification(unknownToken, TypeSpecification.UNKNOWN, null, null));
 				}
 			}
 		}
 		
-		return new TypeSpecification(token, name, generics);
+		return new TypeSpecification(token, name, generics, parameterTypes);
 	}
 	
 	private StatementList block() {

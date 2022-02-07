@@ -9,6 +9,7 @@ import io.github.bloepiloepi.bite.runtime.object.BiteObject;
 import io.github.bloepiloepi.bite.runtime.stack.CallStack;
 import io.github.bloepiloepi.bite.semantic.scope.ScopeType;
 import io.github.bloepiloepi.bite.semantic.scope.SemanticAnalyzer;
+import io.github.bloepiloepi.bite.semantic.symbol.FunctionTypeInstanceSymbol;
 import io.github.bloepiloepi.bite.semantic.symbol.TypeInstanceSymbol;
 import io.github.bloepiloepi.bite.semantic.symbol.TypeSymbol;
 
@@ -37,13 +38,17 @@ public class ExpressionFunctionDefinition extends Expression {
 	@Override
 	public void analyze() {
 		type.analyze();
-		returnType = new TypeInstanceSymbol(TypeSymbol.FUNCTION, List.of(type.getSymbol()));
 		
 		SemanticAnalyzer.current.newScope(ScopeType.FUNCTION, type.getSymbol());
 		
+		List<TypeInstanceSymbol> parameterTypes = new ArrayList<>();
 		for (Declaration parameter : parameters) {
 			parameter.analyze(); //Also puts the parameter in the current scope
+			parameterTypes.add(parameter.getType().getSymbol());
 		}
+		
+		returnType = new FunctionTypeInstanceSymbol(TypeSymbol.FUNCTION, List.of(type.getSymbol()), parameterTypes);
+		SemanticAnalyzer.current.currentScope.setReturnType(returnType);
 		
 		statements.analyze();
 		

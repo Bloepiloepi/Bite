@@ -17,6 +17,7 @@ public class TypeSpecification extends Expression {
 	
 	private final String name;
 	private final List<TypeSpecification> generics;
+	private final List<TypeSpecification> parameterTypes;
 	
 	private boolean allowGeneric = true;
 	private boolean allowInfer = false;
@@ -26,12 +27,14 @@ public class TypeSpecification extends Expression {
 		super(token);
 		this.name = name;
 		this.generics = null;
+		this.parameterTypes = null;
 	}
 	
-	public TypeSpecification(Token token, String name, List<TypeSpecification> generics) {
+	public TypeSpecification(Token token, String name, List<TypeSpecification> generics, List<TypeSpecification> parameterTypes) {
 		super(token);
 		this.name = name;
 		this.generics = generics;
+		this.parameterTypes = parameterTypes;
 	}
 	
 	public void allowGeneric(boolean allowGeneric) {
@@ -100,6 +103,28 @@ public class TypeSpecification extends Expression {
 				} else {
 					shouldInfer = true;
 				}
+			}
+			
+			if (typeSymbol.equals(TypeSymbol.FUNCTION)) {
+				List<TypeInstanceSymbol> parameterSymbols = new ArrayList<>();
+				
+				if (parameterTypes != null) {
+					for (TypeSpecification specification : parameterTypes) {
+						specification.analyze();
+						parameterSymbols.add(specification.getSymbol());
+					}
+				} else {
+					if (!allowInfer) {
+						Main.error("No parameter types for '" + name + "' are specified: " + getToken().getPosition().format());
+					} else {
+						shouldInfer = true;
+					}
+				}
+				
+				symbol = new FunctionTypeInstanceSymbol(typeSymbol, genericSymbols, parameterSymbols);
+				return;
+			} else if (parameterTypes != null) {
+				Main.error("Parameter types not allowed here: " + getToken().getPosition().format());
 			}
 			
 			symbol = new TypeInstanceSymbol(typeSymbol, genericSymbols);
