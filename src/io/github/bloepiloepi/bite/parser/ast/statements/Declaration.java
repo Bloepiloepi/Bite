@@ -1,0 +1,84 @@
+package io.github.bloepiloepi.bite.parser.ast.statements;
+
+import io.github.bloepiloepi.bite.Main;
+import io.github.bloepiloepi.bite.parser.ast.expression.Expression;
+import io.github.bloepiloepi.bite.parser.ast.expression.Variable;
+import io.github.bloepiloepi.bite.parser.ast.types.TypeSpecification;
+import io.github.bloepiloepi.bite.runtime.object.BiteObject;
+import io.github.bloepiloepi.bite.runtime.object.BiteStructure;
+import io.github.bloepiloepi.bite.semantic.builtin.NativeTypes;
+import io.github.bloepiloepi.bite.semantic.scope.ScopeType;
+import io.github.bloepiloepi.bite.semantic.scope.SemanticAnalyzer;
+import io.github.bloepiloepi.bite.semantic.symbol.FieldSymbol;
+import io.github.bloepiloepi.bite.semantic.symbol.TypeInstanceSymbol;
+import io.github.bloepiloepi.bite.semantic.symbol.VariableSymbol;
+
+public class Declaration extends Expression implements Statement {
+	private final TypeSpecification type;
+	private final String name;
+	
+	private final boolean global;
+	
+	public Declaration(TypeSpecification type, String name, boolean global) {
+		super(type.getToken());
+		this.type = type;
+		this.name = name;
+		this.global = global;
+	}
+	
+	public TypeSpecification getType() {
+		return type;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	@Override
+	public TypeInstanceSymbol getReturnTypeNonValid() {
+		return NativeTypes.VOID_INSTANCE;
+	}
+	
+	@Override
+	public BiteObject<?> getValue() {
+		Main.error("Something weird happened");
+		return null;
+	}
+	
+	@Override
+	public void execute() {
+	
+	}
+	
+	@Override
+	public void analyze() {
+		//TODO also check parent scope in case of control scopes (if, loops)
+		if (global && SemanticAnalyzer.current.currentScope.getScopeType() != ScopeType.FILE && SemanticAnalyzer.current.currentScope.getScopeType() != ScopeType.STRUCTURE) {
+			Main.error("Global is not allowed here: " + getToken().getPosition().format());
+		}
+		
+		boolean field = !global && SemanticAnalyzer.current.currentScope.getScopeType() == ScopeType.STRUCTURE;
+		VariableSymbol symbol = createVariableSymbol(field);
+		
+		if (global) {
+			if (SemanticAnalyzer.current.currentScope.getScopeType() == ScopeType.STRUCTURE) {
+				SemanticAnalyzer.current.currentScope.insertGlobal(symbol, getToken());
+			} else {
+				SemanticAnalyzer.globalScope.insert(symbol, getToken());
+			}
+		} else {
+			SemanticAnalyzer.current.currentScope.insert(symbol, getToken());
+		}
+	}
+	
+	private VariableSymbol createVariableSymbol(boolean field) {
+		type.analyze();
+		TypeInstanceSymbol typeSymbol = type.getSymbol();
+		
+		if (field) {
+			return new FieldSymbol(SemanticAnalyzer.current.currentScope.getScopeLevel(), name, typeSymbol);
+		}
+		
+		return new VariableSymbol(name, typeSymbol);
+	}
+}
