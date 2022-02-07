@@ -11,11 +11,12 @@ import io.github.bloepiloepi.bite.runtime.stack.ActivationRecord;
 import io.github.bloepiloepi.bite.runtime.stack.CallStack;
 import io.github.bloepiloepi.bite.semantic.scope.ScopeType;
 import io.github.bloepiloepi.bite.semantic.scope.SemanticAnalyzer;
+import io.github.bloepiloepi.bite.semantic.symbol.FunctionTypeInstanceSymbol;
 import io.github.bloepiloepi.bite.semantic.symbol.OperatorSymbol;
 import io.github.bloepiloepi.bite.semantic.symbol.TypeInstanceSymbol;
-import io.github.bloepiloepi.bite.semantic.symbol.TypeSymbol;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Call extends Expression implements Statement {
 	private final Expression expression;
@@ -41,15 +42,26 @@ public class Call extends Expression implements Statement {
 		expression.analyze();
 		TypeInstanceSymbol type = expression.getReturnType();
 		
-		if (type.getBaseType().equals(TypeSymbol.FUNCTION)) {
+		if (type instanceof FunctionTypeInstanceSymbol func) {
 			function = true;
 			returnType = type.getGenerics().get(0);
 			
-			for (Expression argument : arguments) {
+			List<TypeInstanceSymbol> parameterTypes = func.getParameterTypes();
+			if (arguments.size() > parameterTypes.size()) {
+				Main.error("Too many arguments: " + getToken().getPosition().format());
+			} else if (arguments.size() < parameterTypes.size()) {
+				Main.error("Not enough arguments: " + getToken().getPosition().format());
+			}
+			
+			for (int i = 0; i < arguments.size(); i++) {
+				Expression argument = arguments.get(i);
 				argument.analyze();
 				TypeInstanceSymbol argumentType = argument.getReturnType();
+				TypeInstanceSymbol required = parameterTypes.get(i);
 				
-				//TODO type check arguments
+				if (!argumentType.equals(required)) {
+					Main.error("Invalid type, '" + required.getName() + "' required: " + argument.getToken().getPosition().format());
+				}
 			}
 			
 			return;

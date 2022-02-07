@@ -58,13 +58,11 @@ public class ExpressionFunctionDefinition extends Expression {
 	@Override
 	public BiteObject<?> getValue() {
 		List<String> parameterNames = new ArrayList<>();
-		List<TypeInstanceSymbol> parameterTypes = new ArrayList<>();
 		
 		for (Declaration declaration : parameters) {
 			parameterNames.add(declaration.getName());
-			parameterTypes.add(declaration.getType().getSymbol());
 		}
 		
-		return BiteObject.builtinObject(new FunctionDefinition(returnType, parameterNames, parameterTypes, statements, CallStack.current().peek()));
+		return BiteObject.builtinObject(new FunctionDefinition(parameterNames, statements, CallStack.current().peek()));
 	}
 }
