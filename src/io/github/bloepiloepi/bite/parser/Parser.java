@@ -729,13 +729,17 @@ public class Parser {
 					if (currentToken.getType() == TokenType.LPAREN) {
 						eat(TokenType.LPAREN);
 						
-						parameterTypes.add(typeSpecification(false));
-						while (currentToken.getType() == TokenType.COMMA) {
-							eat(TokenType.COMMA);
+						if (currentToken.getType() == TokenType.IDENTIFIER) {
 							parameterTypes.add(typeSpecification(false));
+							while (currentToken.getType() == TokenType.COMMA) {
+								eat(TokenType.COMMA);
+								parameterTypes.add(typeSpecification(false));
+							}
 						}
 						
 						eat(TokenType.RPAREN);
+					} else if (currentToken.getType() == TokenType.IDENTIFIER) {
+						parameterTypes.add(typeSpecification(false));
 					}
 				} else while (currentToken.getType() == TokenType.COMMA) {
 					eat(TokenType.COMMA);
