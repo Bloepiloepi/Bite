@@ -29,6 +29,13 @@ public class NativeOperators {
 			CallStack.current().peek().return_(BiteObject.floatValue((Float) record.getObject("op1", -1).getValue() + (Integer) record.getObject("op2", -1).getValue()));
 		}, NativeTypes.FLOAT_INSTANCE, NativeTypes.FLOAT_INSTANCE);
 		
+		addToTable(table, Operator.PLUS, List.of(), NativeTypes.INTEGER_INSTANCE, record -> {
+			CallStack.current().peek().return_(BiteObject.intValue((Integer) record.getObject("op1", -1).getValue()));
+		}, NativeTypes.INTEGER_INSTANCE);
+		addToTable(table, Operator.PLUS, List.of(), NativeTypes.FLOAT_INSTANCE, record -> {
+			CallStack.current().peek().return_(BiteObject.floatValue((Float) record.getObject("op1", -1).getValue()));
+		}, NativeTypes.FLOAT_INSTANCE);
+		
 		addToTable(table, Operator.MINUS, List.of(), NativeTypes.INTEGER_INSTANCE, record -> {
 			CallStack.current().peek().return_(BiteObject.intValue((Integer) record.getObject("op1", -1).getValue() - (Integer) record.getObject("op2", -1).getValue()));
 		}, NativeTypes.INTEGER_INSTANCE, NativeTypes.INTEGER_INSTANCE);
@@ -38,6 +45,13 @@ public class NativeOperators {
 		addToTable(table, Operator.MINUS, List.of(), NativeTypes.FLOAT_INSTANCE, record -> {
 			CallStack.current().peek().return_(BiteObject.floatValue((Float) record.getObject("op1", -1).getValue() - (Float) record.getObject("op2", -1).getValue()));
 		}, NativeTypes.FLOAT_INSTANCE, NativeTypes.FLOAT_INSTANCE);
+		
+		addToTable(table, Operator.MINUS, List.of(), NativeTypes.INTEGER_INSTANCE, record -> {
+			CallStack.current().peek().return_(BiteObject.intValue(-((Integer) record.getObject("op1", -1).getValue())));
+		}, NativeTypes.INTEGER_INSTANCE);
+		addToTable(table, Operator.MINUS, List.of(), NativeTypes.FLOAT_INSTANCE, record -> {
+			CallStack.current().peek().return_(BiteObject.floatValue(-((Float) record.getObject("op1", -1).getValue())));
+		}, NativeTypes.FLOAT_INSTANCE);
 		
 		addToTable(table, Operator.DIVIDE, List.of(), NativeTypes.FLOAT_INSTANCE, record -> {
 			CallStack.current().peek().return_(BiteObject.floatValue((Integer) record.getObject("op1", -1).getValue() / ((Integer) record.getObject("op2", -1).getValue()).floatValue()));

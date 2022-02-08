@@ -84,7 +84,10 @@ public class OperatorSymbol extends Symbol {
 	public boolean appliesTo(List<TypeInstanceSymbol> toTest) {
 		Map<String, TypeInstanceSymbol> genericReplacements = new HashMap<>();
 		
-		if (operator.hasStaticOperands()) {
+		if (staticOperands.size() != toTest.size())
+			return false;
+		
+		if (operator.hasStaticOperands() || staticOperands.size() == 1) {
 			for (int i = 0; i < toTest.size(); i++) {
 				if (!toTest.get(i).equalsUnGenerified(staticOperands.get(i), genericReplacements)) return false;
 				genericReplacements.putAll(toTest.get(i).getGenericReplacements());
