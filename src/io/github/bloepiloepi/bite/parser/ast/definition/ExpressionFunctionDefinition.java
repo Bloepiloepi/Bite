@@ -48,7 +48,7 @@ public class ExpressionFunctionDefinition extends Expression {
 		}
 		
 		returnType = new FunctionTypeInstanceSymbol(TypeSymbol.FUNCTION, List.of(type.getSymbol()), parameterTypes);
-		SemanticAnalyzer.current.currentScope.setReturnType(returnType);
+		SemanticAnalyzer.current.currentScope.setReturnType(type.getSymbol());
 		
 		statements.analyze();
 		

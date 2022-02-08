@@ -53,7 +53,6 @@ public class Variable extends Expression {
 	public static VariableSymbol getInferred(Symbol previousSymbol, TypeInstanceSymbol newType) {
 		if (previousSymbol instanceof FieldSymbol field) {
 			return new FieldSymbol(field.getStructureScopeLevel(), field.getName(), newType);
-			//TODO also change on type
 		} else {
 			return new VariableSymbol(previousSymbol.getName(), newType);
 		}

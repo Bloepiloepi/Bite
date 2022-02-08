@@ -99,7 +99,6 @@ public class Assignment extends Expression implements Statement {
 				Symbol symbol = (instanced ? left.getBaseType().getSubSymbols() : left.getBaseType().getStaticSubSymbols()).get(variable.getName());
 				
 				(instanced ? left.getBaseType().getSubSymbols() : left.getBaseType().getStaticSubSymbols()).put(variable.getName(), Variable.getInferred(symbol, complete));
-				//TODO replace current scope type
 			}
 			return complete;
 		} else {
