@@ -573,27 +573,35 @@ public class Parser {
 		
 		eat(TokenType.EXPORT);
 		
-		Expression expression;
-		String exportName = null;
+		List<Expression> expressions = new ArrayList<>();
+		List<String> exportNames = new ArrayList<>();
 		
-		if (currentToken.getType() == TokenType.OPERATOR) {
-			expression = operatorDescription();
-		} else {
-			expression = expression();
-			
-			if (currentToken.getType() == TokenType.AS) {
-				eat(TokenType.AS);
-				
-				exportName = currentToken.getValue();
-				eat(TokenType.IDENTIFIER);
-			} else if (expression instanceof Variable) {
-				exportName = ((Variable) expression).getName();
+		while (true) {
+			if (currentToken.getType() == TokenType.OPERATOR) {
+				expressions.add(operatorDescription());
+				exportNames.add(null);
 			} else {
-				Main.error("Export statement must specify name if the name is not clear from context (at " + currentToken.getPosition().format() + ")");
+				Expression expression = expression();
+				expressions.add(expression);
+				
+				if (currentToken.getType() == TokenType.AS) {
+					eat(TokenType.AS);
+					
+					exportNames.add(currentToken.getValue());
+					eat(TokenType.IDENTIFIER);
+				} else if (expression instanceof Variable) {
+					exportNames.add(((Variable) expression).getName());
+				} else {
+					Main.error("Export statement must specify name if the name is not clear from context (at " + currentToken.getPosition().format() + ")");
+				}
 			}
+			
+			if (currentToken.getType() != TokenType.COMMA)
+				break;
+			eat(TokenType.COMMA);
 		}
 		
-		return new ExportStatement(token, expression, exportName);
+		return new ExportStatement(token, expressions, exportNames);
 	}
 	
 	private OperatorDescription operatorDescription() {
