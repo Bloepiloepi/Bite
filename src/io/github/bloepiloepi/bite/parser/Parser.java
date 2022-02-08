@@ -511,6 +511,7 @@ public class Parser {
 		boolean importAll = false;
 		if (currentToken.getType() == TokenType.MULTIPLY) {
 			importAll = true;
+			eat(TokenType.MULTIPLY);
 		} else if (currentToken.getType() == TokenType.OPERATOR) {
 			importedOperators.add(operatorDescription());
 		} else if (currentToken.getType() == TokenType.IDENTIFIER) {
