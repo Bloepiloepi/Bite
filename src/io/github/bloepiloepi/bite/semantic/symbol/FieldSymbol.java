@@ -1,6 +1,5 @@
 package io.github.bloepiloepi.bite.semantic.symbol;
 
-import io.github.bloepiloepi.bite.parser.ast.expression.Variable;
 import io.github.bloepiloepi.bite.runtime.object.BiteStructure;
 import io.github.bloepiloepi.bite.runtime.object.StructureField;
 import io.github.bloepiloepi.bite.runtime.stack.CallStack;
@@ -11,6 +10,10 @@ public class FieldSymbol extends VariableSymbol {
 	public FieldSymbol(int structureScopeLevel, String name, TypeInstanceSymbol type) {
 		super(name, type);
 		this.structureScopeLevel = structureScopeLevel;
+	}
+	
+	public int getStructureScopeLevel() {
+		return structureScopeLevel;
 	}
 	
 	public StructureField createExpression() {

@@ -33,7 +33,7 @@ public class ListDefinition extends Expression {
 		for (Expression expression : values) {
 			expression.analyze();
 			
-			TypeInstanceSymbol expressionReturnType = expression.getReturnType();
+			TypeInstanceSymbol expressionReturnType = expression.getReturnType(true);
 			if (!contentType.equals(expressionReturnType)) {
 				Main.error("Not the same types in list: " + getToken().getPosition().format());
 			} else {

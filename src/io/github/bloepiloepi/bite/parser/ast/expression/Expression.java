@@ -13,11 +13,13 @@ public abstract class Expression implements AST {
 		this.token = token;
 	}
 	
-	public TypeInstanceSymbol getReturnType() {
+	public TypeInstanceSymbol getReturnType(boolean complete) {
 		TypeInstanceSymbol symbol = getReturnTypeNonValid();
 		
 		if (symbol == null) {
 			Main.error("Non-valid expression: " + getToken().getPosition().format());
+		} else if (complete && !symbol.isComplete()) {
+			Main.error("Type is not complete: " + getToken().getPosition().format());
 		}
 		
 		return symbol;

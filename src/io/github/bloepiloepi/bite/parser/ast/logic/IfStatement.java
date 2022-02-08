@@ -47,7 +47,7 @@ public class IfStatement implements LogicStatement {
 	@Override
 	public void analyze() {
 		expression.analyze();
-		TypeInstanceSymbol expressionType = expression.getReturnType();
+		TypeInstanceSymbol expressionType = expression.getReturnType(true);
 		
 		if (!expressionType.getBaseType().equals(TypeSymbol.BOOLEAN)) {
 			Main.error("Logic statement expression should be a boolean: " + token.getPosition().format());

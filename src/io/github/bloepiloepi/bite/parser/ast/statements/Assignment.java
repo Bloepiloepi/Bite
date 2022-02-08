@@ -14,8 +14,7 @@ import io.github.bloepiloepi.bite.runtime.stack.CallStack;
 import io.github.bloepiloepi.bite.semantic.builtin.NativeTypes;
 import io.github.bloepiloepi.bite.semantic.scope.ScopeType;
 import io.github.bloepiloepi.bite.semantic.scope.SemanticAnalyzer;
-import io.github.bloepiloepi.bite.semantic.symbol.OperatorSymbol;
-import io.github.bloepiloepi.bite.semantic.symbol.TypeInstanceSymbol;
+import io.github.bloepiloepi.bite.semantic.symbol.*;
 
 import java.util.List;
 
@@ -52,44 +51,60 @@ public class Assignment extends Expression implements Statement {
 	@Override
 	public void analyze() {
 		rightHand.analyze();
-		if (leftHand instanceof Declaration declaration) {
-			//Infer the generic for functions
-			declaration.getType().allowInfer(true);
-			declaration.getType().analyze();
-			if (declaration.getType().shouldInfer()) {
-				if (rightHand instanceof ExpressionFunctionDefinition func) {
-					declaration.getType().infer(func.getReturnType());
-				}
-			}
-		}
-		
 		leftHand.analyze();
 		
 		TypeInstanceSymbol leftReturnType;
 		if (leftHand instanceof Declaration declaration) {
 			Variable variable = new Variable(declaration.getToken(), declaration.getName());
 			variable.analyze();
-			leftReturnType = variable.getReturnType();
+			leftReturnType = variable.getReturnType(false);
 		} else if (leftHand instanceof Variable variable) {
-			scopeLevel = variable.getScopeLevel();
-			leftReturnType = leftHand.getReturnType();
+			scopeLevel = variable.getSymbol().getScopeLevel();
+			leftReturnType = leftHand.getReturnType(false);
 		} else if (leftHand instanceof BinaryOperator op && op.getOperator() == Operator.DOT) {
-			leftReturnType = leftHand.getReturnType();
+			leftReturnType = leftHand.getReturnType(false);
 		} else if (leftHand instanceof BinaryOperator op && op.getOperator() == Operator.LIST_ACCESS) {
-			leftReturnType = leftHand.getReturnType();
+			leftReturnType = leftHand.getReturnType(true);
 		} else {
 			Main.error("Cannot assign a value: " + getToken().getPosition().format());
 			return;
 		}
+		if (!leftReturnType.isComplete()) {
+			leftReturnType = infer();
+		}
 		
-		List<TypeInstanceSymbol> operands = List.of(leftReturnType, rightHand.getReturnType());
+		TypeInstanceSymbol rightReturnType = rightHand.getReturnType(true);
+		List<TypeInstanceSymbol> operands = List.of(leftReturnType, rightReturnType);
 		symbol = SemanticAnalyzer.current.currentScope.lookupOperator(Operator.ASSIGN, operands, false);
 		if (symbol == null) {
-			if (!leftReturnType.equals(rightHand.getReturnType())) {
+			if (!leftReturnType.equals(rightReturnType)) {
 				Main.error("Invalid type, '" + leftReturnType.getName() + "' required: " + rightHand.getToken().getPosition().format());
 			}
 		} else {
 			overloaded = true;
+		}
+	}
+	
+	private TypeInstanceSymbol infer() {
+		if (rightHand instanceof ExpressionFunctionDefinition func) {
+			TypeInstanceSymbol complete = func.getReturnType(true);
+			if (leftHand instanceof Variable variable) {
+				SemanticAnalyzer.current.currentScope.replace(variable.getSymbol(), Variable.getInferred(variable.getSymbol(), complete));
+			} else if (leftHand instanceof Declaration declaration) {
+				SemanticAnalyzer.current.currentScope.replace(declaration.getVariableSymbol(), new VariableSymbol(declaration.getName(), complete));
+			} else if (leftHand instanceof BinaryOperator op && op.getOperator() == Operator.DOT && op.getRightHand() instanceof Variable variable) {
+				TypeInstanceSymbol left = op.getLeftHand().getReturnType(true);
+				
+				boolean instanced = left.getBaseType().getSubSymbols().containsKey(variable.getName());
+				Symbol symbol = (instanced ? left.getBaseType().getSubSymbols() : left.getBaseType().getStaticSubSymbols()).get(variable.getName());
+				
+				(instanced ? left.getBaseType().getSubSymbols() : left.getBaseType().getStaticSubSymbols()).put(variable.getName(), Variable.getInferred(symbol, complete));
+				//TODO replace current scope type
+			}
+			return complete;
+		} else {
+			Main.error("Cannot infer type: " + leftHand.getToken().getPosition().format());
+			return NativeTypes.VOID_INSTANCE;
 		}
 	}
 	

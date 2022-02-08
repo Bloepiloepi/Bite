@@ -2,10 +2,8 @@ package io.github.bloepiloepi.bite.parser.ast.statements;
 
 import io.github.bloepiloepi.bite.Main;
 import io.github.bloepiloepi.bite.parser.ast.expression.Expression;
-import io.github.bloepiloepi.bite.parser.ast.expression.Variable;
 import io.github.bloepiloepi.bite.parser.ast.types.TypeSpecification;
 import io.github.bloepiloepi.bite.runtime.object.BiteObject;
-import io.github.bloepiloepi.bite.runtime.object.BiteStructure;
 import io.github.bloepiloepi.bite.semantic.builtin.NativeTypes;
 import io.github.bloepiloepi.bite.semantic.scope.ScopeType;
 import io.github.bloepiloepi.bite.semantic.scope.SemanticAnalyzer;
@@ -45,6 +43,12 @@ public class Declaration extends Expression implements Statement {
 		return null;
 	}
 	
+	private VariableSymbol variableSymbol;
+	
+	public VariableSymbol getVariableSymbol() {
+		return variableSymbol;
+	}
+	
 	@Override
 	public void execute() {
 	
@@ -58,20 +62,21 @@ public class Declaration extends Expression implements Statement {
 		}
 		
 		boolean field = !global && SemanticAnalyzer.current.currentScope.getScopeType() == ScopeType.STRUCTURE;
-		VariableSymbol symbol = createVariableSymbol(field);
+		variableSymbol = createVariableSymbol(field);
 		
 		if (global) {
 			if (SemanticAnalyzer.current.currentScope.getScopeType() == ScopeType.STRUCTURE) {
-				SemanticAnalyzer.current.currentScope.insertGlobal(symbol, getToken());
+				SemanticAnalyzer.current.currentScope.insertGlobal(variableSymbol, getToken());
 			} else {
-				SemanticAnalyzer.globalScope.insert(symbol, getToken());
+				SemanticAnalyzer.globalScope.insert(variableSymbol, getToken());
 			}
 		} else {
-			SemanticAnalyzer.current.currentScope.insert(symbol, getToken());
+			SemanticAnalyzer.current.currentScope.insert(variableSymbol, getToken());
 		}
 	}
 	
 	private VariableSymbol createVariableSymbol(boolean field) {
+		type.allowInfer(true);
 		type.analyze();
 		TypeInstanceSymbol typeSymbol = type.getSymbol();
 		

@@ -5,10 +5,7 @@ import io.github.bloepiloepi.bite.lexer.Token;
 import io.github.bloepiloepi.bite.runtime.object.BiteObject;
 import io.github.bloepiloepi.bite.runtime.stack.CallStack;
 import io.github.bloepiloepi.bite.semantic.scope.SemanticAnalyzer;
-import io.github.bloepiloepi.bite.semantic.symbol.FieldSymbol;
-import io.github.bloepiloepi.bite.semantic.symbol.Symbol;
-import io.github.bloepiloepi.bite.semantic.symbol.TypeInstanceSymbol;
-import io.github.bloepiloepi.bite.semantic.symbol.TypeSymbol;
+import io.github.bloepiloepi.bite.semantic.symbol.*;
 
 public class Variable extends Expression {
 	private final String name;
@@ -22,12 +19,11 @@ public class Variable extends Expression {
 		return name;
 	}
 	
-	private int scopeLevel;
 	private TypeInstanceSymbol returnType;
-	private FieldSymbol field;
+	private Symbol symbol;
 	
-	public int getScopeLevel() {
-		return scopeLevel;
+	public Symbol getSymbol() {
+		return symbol;
 	}
 	
 	@Override
@@ -44,17 +40,22 @@ public class Variable extends Expression {
 			return;
 		}
 		
-		if (symbol instanceof FieldSymbol fieldSymbol) {
-			field = fieldSymbol;
-		}
-		
-		scopeLevel = symbol.getScopeLevel();
+		this.symbol = symbol;
 		returnType = symbol.getType();
 	}
 	
 	@Override
 	public BiteObject<?> getValue() {
-		if (field != null) return field.createExpression();
-		return CallStack.current().peek().getObject(name, scopeLevel);
+		if (symbol instanceof FieldSymbol field) return field.createExpression();
+		return CallStack.current().peek().getObject(name, symbol.getScopeLevel());
+	}
+	
+	public static VariableSymbol getInferred(Symbol previousSymbol, TypeInstanceSymbol newType) {
+		if (previousSymbol instanceof FieldSymbol field) {
+			return new FieldSymbol(field.getStructureScopeLevel(), field.getName(), newType);
+			//TODO also change on type
+		} else {
+			return new VariableSymbol(previousSymbol.getName(), newType);
+		}
 	}
 }

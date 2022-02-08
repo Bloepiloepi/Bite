@@ -45,7 +45,7 @@ public class ForStatement implements LogicStatement {
 		expression.analyze();
 		change.analyze();
 		
-		Symbol expressionType = expression.getReturnType();
+		Symbol expressionType = expression.getReturnType(true);
 		
 		if (!expressionType.equals(TypeSymbol.BOOLEAN)) {
 			Main.error("Logic statement expression should be a boolean: " + token.getPosition().format());

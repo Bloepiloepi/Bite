@@ -39,7 +39,7 @@ public class ExportStatement implements Statement {
 			SemanticAnalyzer.current.addExport(expression.getSymbol());
 		} else {
 			expression.analyze();
-			TypeInstanceSymbol type = expression.getReturnType();
+			TypeInstanceSymbol type = expression.getReturnType(true);
 			if (expression instanceof Variable variable && type.getName().equals(variable.getName())) {
 				SemanticAnalyzer.current.addExport(exportName, type.getBaseType());
 			} else {

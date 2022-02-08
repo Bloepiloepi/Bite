@@ -40,7 +40,7 @@ public class Call extends Expression implements Statement {
 	@Override
 	public void analyze() {
 		expression.analyze();
-		TypeInstanceSymbol type = expression.getReturnType();
+		TypeInstanceSymbol type = expression.getReturnType(true);
 		
 		if (type instanceof FunctionTypeInstanceSymbol func) {
 			function = true;
@@ -56,7 +56,7 @@ public class Call extends Expression implements Statement {
 			for (int i = 0; i < arguments.size(); i++) {
 				Expression argument = arguments.get(i);
 				argument.analyze();
-				TypeInstanceSymbol argumentType = argument.getReturnType();
+				TypeInstanceSymbol argumentType = argument.getReturnType(true);
 				TypeInstanceSymbol required = parameterTypes.get(i);
 				
 				if (!argumentType.equals(required)) {
@@ -72,7 +72,7 @@ public class Call extends Expression implements Statement {
 		
 		for (Expression argument : arguments) {
 			argument.analyze();
-			TypeInstanceSymbol argumentType = argument.getReturnType();
+			TypeInstanceSymbol argumentType = argument.getReturnType(true);
 			
 			operands.add(argumentType);
 		}

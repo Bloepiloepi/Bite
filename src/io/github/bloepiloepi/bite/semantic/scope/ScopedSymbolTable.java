@@ -80,6 +80,20 @@ public class ScopedSymbolTable {
 		operators.add(symbol);
 	}
 	
+	public void replace(Symbol oldSymbol, Symbol newSymbol) {
+		if (oldSymbol.getScopeLevel() == -1 || oldSymbol.getScopeLevel() == scopeLevel) {
+			if (symbols.containsKey(oldSymbol.getName())) {
+				newSymbol.setScopeLevel(scopeLevel);
+				symbols.put(oldSymbol.getName(), newSymbol);
+			} else if (globalSymbols.containsKey(oldSymbol.getName())) {
+				newSymbol.setScopeLevel(scopeLevel);
+				symbols.put(oldSymbol.getName(), newSymbol);
+			}
+		} else {
+			if (enclosingScope != null) enclosingScope.replace(oldSymbol, newSymbol);
+		}
+	}
+	
 	public Symbol lookup(String name, boolean currentScopeOnly) {
 		Symbol symbol = symbols.get(name);
 		if (symbol == null)

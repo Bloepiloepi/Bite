@@ -6,9 +6,13 @@ import java.util.List;
 public class FunctionTypeInstanceSymbol extends TypeInstanceSymbol {
 	private final List<TypeInstanceSymbol> parameterTypes;
 	
-	public FunctionTypeInstanceSymbol(TypeSymbol type, List<TypeInstanceSymbol> generics, List<TypeInstanceSymbol> parameterTypes) {
-		super(type, generics);
+	public FunctionTypeInstanceSymbol(TypeSymbol type, List<TypeInstanceSymbol> generics, List<TypeInstanceSymbol> parameterTypes, boolean complete) {
+		super(type, generics, complete);
 		this.parameterTypes = parameterTypes;
+	}
+	
+	public FunctionTypeInstanceSymbol(TypeSymbol type, List<TypeInstanceSymbol> generics, List<TypeInstanceSymbol> parameterTypes) {
+		this(type, generics, parameterTypes, true);
 	}
 	
 	public List<TypeInstanceSymbol> getParameterTypes() {
@@ -40,7 +44,7 @@ public class FunctionTypeInstanceSymbol extends TypeInstanceSymbol {
 			realParameters.add(parameter.getReal(genericHolder));
 		}
 		
-		return new FunctionTypeInstanceSymbol(getBaseType(), realGenerics, realParameters);
+		return new FunctionTypeInstanceSymbol(getBaseType(), realGenerics, realParameters, isComplete());
 	}
 	
 	@Override

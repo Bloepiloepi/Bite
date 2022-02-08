@@ -29,9 +29,16 @@ public class BinaryOperator extends Expression {
 		return operator;
 	}
 	
+	public Expression getLeftHand() {
+		return leftHand;
+	}
+	
+	public Expression getRightHand() {
+		return rightHand;
+	}
+	
 	private TypeInstanceSymbol returnType;
 	private OperatorSymbol symbol;
-	private boolean instanced;
 	private boolean operandsSwapped;
 	
 	@Override
@@ -45,8 +52,8 @@ public class BinaryOperator extends Expression {
 			leftHand.analyze();
 			rightHand.analyze();
 			
-			TypeInstanceSymbol left = leftHand.getReturnType();
-			TypeInstanceSymbol right = rightHand.getReturnType();
+			TypeInstanceSymbol left = leftHand.getReturnType(true);
+			TypeInstanceSymbol right = rightHand.getReturnType(true);
 			
 			List<TypeInstanceSymbol> operands = List.of(left, right);
 			symbol = SemanticAnalyzer.current.currentScope.lookupOperator(operator, operands, false);
@@ -65,9 +72,9 @@ public class BinaryOperator extends Expression {
 			
 			leftHand.analyze();
 			
-			TypeInstanceSymbol left = leftHand.getReturnType();
+			TypeInstanceSymbol left = leftHand.getReturnType(true);
 			
-			instanced = left.getBaseType().getSubSymbols().containsKey(right.getName());
+			boolean instanced = left.getBaseType().getSubSymbols().containsKey(right.getName());
 			if (!instanced && !left.getBaseType().getStaticSubSymbols().containsKey(right.getName())) {
 				Main.error("Variable '" + right.getName() + "' does not exist on objects of type '" + left.getName() + "': " + right.getToken().getPosition().format());
 			}

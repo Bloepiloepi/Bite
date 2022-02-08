@@ -6,11 +6,17 @@ import java.util.function.Function;
 public class TypeInstanceSymbol extends Symbol {
 	private final TypeSymbol type;
 	private final List<TypeInstanceSymbol> generics;
+	private final boolean complete;
 	
 	public TypeInstanceSymbol(TypeSymbol type, List<TypeInstanceSymbol> generics) {
+		this(type, generics, true);
+	}
+	
+	public TypeInstanceSymbol(TypeSymbol type, List<TypeInstanceSymbol> generics, boolean complete) {
 		super(type.getName());
 		this.type = type;
 		this.generics = generics;
+		this.complete = complete;
 	}
 	
 	public TypeSymbol getBaseType() {
@@ -19,6 +25,10 @@ public class TypeInstanceSymbol extends Symbol {
 	
 	public List<TypeInstanceSymbol> getGenerics() {
 		return generics;
+	}
+	
+	public boolean isComplete() {
+		return complete;
 	}
 	
 	@Override
@@ -52,7 +62,7 @@ public class TypeInstanceSymbol extends Symbol {
 				realGenerics.add(generic.getReal(genericHolder));
 			}
 			
-			return new TypeInstanceSymbol(type, realGenerics);
+			return new TypeInstanceSymbol(type, realGenerics, complete);
 		}
 	}
 	
@@ -66,7 +76,7 @@ public class TypeInstanceSymbol extends Symbol {
 				resolved.add(generic.resolveGenerics(function));
 			}
 			
-			return new TypeInstanceSymbol(type, resolved);
+			return new TypeInstanceSymbol(type, resolved, complete);
 		}
 	}
 	

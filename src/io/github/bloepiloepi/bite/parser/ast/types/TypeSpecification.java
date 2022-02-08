@@ -21,7 +21,7 @@ public class TypeSpecification extends Expression {
 	
 	private boolean allowGeneric = true;
 	private boolean allowInfer = false;
-	private boolean shouldInfer = false;
+	private boolean complete = true;
 	
 	public TypeSpecification(Token token, String name) {
 		super(token);
@@ -46,7 +46,7 @@ public class TypeSpecification extends Expression {
 	}
 	
 	public boolean shouldInfer() {
-		return shouldInfer;
+		return !complete;
 	}
 	
 	public void infer(TypeInstanceSymbol symbol) {
@@ -101,11 +101,15 @@ public class TypeSpecification extends Expression {
 				if (!allowInfer) {
 					Main.error("Not all generics for '" + name + "' are specified: " + getToken().getPosition().format());
 				} else {
-					shouldInfer = true;
+					complete = false;
 				}
 			}
 			
 			if (typeSymbol.equals(TypeSymbol.FUNCTION)) {
+				if ((generics == null && parameterTypes != null) || (generics != null && parameterTypes == null)) {
+					Main.error("Type is not complete: " + getToken().getPosition().format());
+				}
+				
 				List<TypeInstanceSymbol> parameterSymbols = new ArrayList<>();
 				
 				if (parameterTypes != null) {
@@ -117,17 +121,17 @@ public class TypeSpecification extends Expression {
 					if (!allowInfer) {
 						Main.error("No parameter types for '" + name + "' are specified: " + getToken().getPosition().format());
 					} else {
-						shouldInfer = true;
+						complete = false;
 					}
 				}
 				
-				symbol = new FunctionTypeInstanceSymbol(typeSymbol, genericSymbols, parameterSymbols);
+				symbol = new FunctionTypeInstanceSymbol(typeSymbol, genericSymbols, parameterSymbols, complete);
 				return;
 			} else if (parameterTypes != null) {
 				Main.error("Parameter types not allowed here: " + getToken().getPosition().format());
 			}
 			
-			symbol = new TypeInstanceSymbol(typeSymbol, genericSymbols);
+			symbol = new TypeInstanceSymbol(typeSymbol, genericSymbols, complete);
 		} else {
 			Main.error("Not a type: '" + name + "' at " + getToken().getPosition().format());
 		}

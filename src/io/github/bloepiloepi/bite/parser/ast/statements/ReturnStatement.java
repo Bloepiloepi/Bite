@@ -36,7 +36,7 @@ public class ReturnStatement implements Statement {
 		TypeInstanceSymbol returnType;
 		if (expression != null) {
 			expression.analyze();
-			returnType = expression.getReturnType();
+			returnType = expression.getReturnType(true);
 		} else {
 			returnType = NativeTypes.VOID_INSTANCE;
 		}

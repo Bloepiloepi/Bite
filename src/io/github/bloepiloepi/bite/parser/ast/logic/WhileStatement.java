@@ -36,7 +36,7 @@ public class WhileStatement implements LogicStatement {
 	@Override
 	public void analyze() {
 		expression.analyze();
-		Symbol expressionType = expression.getReturnType();
+		Symbol expressionType = expression.getReturnType(true);
 		
 		if (!expressionType.equals(TypeSymbol.BOOLEAN)) {
 			Main.error("Logic statement expression should be a boolean: " + token.getPosition().format());

@@ -33,7 +33,7 @@ public class UnaryOperator extends Expression {
 	@Override
 	public void analyze() {
 		expression.analyze();
-		TypeInstanceSymbol type = expression.getReturnType();
+		TypeInstanceSymbol type = expression.getReturnType(true);
 		
 		List<TypeInstanceSymbol> operands = List.of(type);
 		
