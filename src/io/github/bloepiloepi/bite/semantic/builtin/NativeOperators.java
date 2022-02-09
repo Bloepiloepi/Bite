@@ -2,6 +2,7 @@ package io.github.bloepiloepi.bite.semantic.builtin;
 
 import io.github.bloepiloepi.bite.parser.ast.expression.Operator;
 import io.github.bloepiloepi.bite.runtime.object.BiteObject;
+import io.github.bloepiloepi.bite.runtime.object.ListItem;
 import io.github.bloepiloepi.bite.runtime.stack.ActivationRecord;
 import io.github.bloepiloepi.bite.runtime.stack.CallStack;
 import io.github.bloepiloepi.bite.semantic.scope.ScopedSymbolTable;
@@ -111,7 +112,8 @@ public class NativeOperators {
 			Object object = record.getObject("op1", -1).getValue();
 			if (object instanceof List list) {
 				//TODO exception for out of bounds
-				CallStack.current().peek().return_((BiteObject<?>) list.get((Integer) record.getObject("op2", -1).getValue()));
+				//noinspection unchecked
+				CallStack.current().peek().return_(new ListItem((List<BiteObject<?>>) list, (Integer) record.getObject("op2", -1).getValue()));
 			}
 		}, new TypeInstanceSymbol(TypeSymbol.LIST, List.of(contentGeneric)), NativeTypes.INTEGER_INSTANCE);
 		
