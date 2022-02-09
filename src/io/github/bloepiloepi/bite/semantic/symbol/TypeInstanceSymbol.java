@@ -80,6 +80,14 @@ public class TypeInstanceSymbol extends Symbol {
 		}
 	}
 	
+	public boolean canAutoCast(TypeInstanceSymbol other) {
+		return generics.size() == 0 && type.canAutoCast(other.type);
+	}
+	
+	public boolean equalsExact(TypeInstanceSymbol other) {
+		return name.equals(other.name) && Objects.equals(generics, other.generics);
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -88,8 +96,8 @@ public class TypeInstanceSymbol extends Symbol {
 				return true;
 			}
 			
-			return name.equals(that.name) &&
-					Objects.equals(generics, that.generics);
+			return canAutoCast(that) ||
+					(name.equals(that.name) && Objects.equals(generics, that.generics));
 		} else if (o instanceof Symbol) {
 			return o.equals(this);
 		}
@@ -120,7 +128,7 @@ public class TypeInstanceSymbol extends Symbol {
 			return true;
 		}
 		
-		if (!this.type.equals(other.type)) return false;
+		if (!this.type.equalsExact(other.type)) return false;
 		
 		for (int i = 0; i < generics.size(); i++) {
 			if (!generics.get(i).equalsUnGenerified(other.generics.get(i)))

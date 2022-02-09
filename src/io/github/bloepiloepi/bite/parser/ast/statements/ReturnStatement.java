@@ -27,11 +27,15 @@ public class ReturnStatement implements Statement {
 		return token;
 	}
 	
+	private TypeInstanceSymbol scopeReturnType;
+	
 	@Override
 	public void analyze() {
 		if (!SemanticAnalyzer.current.currentScope.isInsideScopeType(ScopeType.FUNCTION)) {
 			Main.error("Return statement is not allowed here: " + expression.getToken().getPosition().format());
 		}
+		
+		scopeReturnType = SemanticAnalyzer.current.currentScope.getReturnType();
 		
 		TypeInstanceSymbol returnType;
 		if (expression != null) {
@@ -41,7 +45,7 @@ public class ReturnStatement implements Statement {
 			returnType = NativeTypes.VOID_INSTANCE;
 		}
 		
-		if (returnType.equals(SemanticAnalyzer.current.currentScope.getReturnType())) {
+		if (returnType.equals(scopeReturnType)) {
 			//TODO
 			//SemanticAnalyzer.current.currentScope.return_();
 		} else {
@@ -53,7 +57,7 @@ public class ReturnStatement implements Statement {
 	@Override
 	public void execute() {
 		if (expression != null) {
-			CallStack.current().peek().return_(expression.getValue());
+			CallStack.current().peek().return_(expression.getValue().cast(scopeReturnType.getBaseType()));
 		} else {
 			CallStack.current().peek().return_(null);
 		}

@@ -94,6 +94,7 @@ public class BinaryOperator extends Expression {
 			
 			return new StructureField(left, variable.getName());
 		} else {
+			//No casting here because operators are exact
 			BiteObject<?> left = leftHand.getValue();
 			BiteObject<?> right = rightHand.getValue();
 			

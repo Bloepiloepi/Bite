@@ -2,7 +2,6 @@ package io.github.bloepiloepi.bite.parser.ast.statements;
 
 import io.github.bloepiloepi.bite.Main;
 import io.github.bloepiloepi.bite.lexer.Token;
-import io.github.bloepiloepi.bite.parser.ast.definition.ExpressionFunctionDefinition;
 import io.github.bloepiloepi.bite.parser.ast.definition.FunctionDefinition;
 import io.github.bloepiloepi.bite.parser.ast.expression.Expression;
 import io.github.bloepiloepi.bite.parser.ast.expression.Operator;
@@ -31,6 +30,7 @@ public class Call extends Expression implements Statement {
 	private TypeInstanceSymbol returnType;
 	private OperatorSymbol symbol;
 	private boolean function = false;
+	private List<TypeInstanceSymbol> argumentTypes;
 	
 	@Override
 	public TypeInstanceSymbol getReturnTypeNonValid() {
@@ -46,10 +46,10 @@ public class Call extends Expression implements Statement {
 			function = true;
 			returnType = type.getGenerics().get(0);
 			
-			List<TypeInstanceSymbol> parameterTypes = func.getParameterTypes();
-			if (arguments.size() > parameterTypes.size()) {
+			argumentTypes = func.getParameterTypes();
+			if (arguments.size() > argumentTypes.size()) {
 				Main.error("Too many arguments: " + getToken().getPosition().format());
-			} else if (arguments.size() < parameterTypes.size()) {
+			} else if (arguments.size() < argumentTypes.size()) {
 				Main.error("Not enough arguments: " + getToken().getPosition().format());
 			}
 			
@@ -57,7 +57,7 @@ public class Call extends Expression implements Statement {
 				Expression argument = arguments.get(i);
 				argument.analyze();
 				TypeInstanceSymbol argumentType = argument.getReturnType(true);
-				TypeInstanceSymbol required = parameterTypes.get(i);
+				TypeInstanceSymbol required = argumentTypes.get(i);
 				
 				if (!argumentType.equals(required)) {
 					Main.error("Invalid type, '" + required.getName() + "' required: " + argument.getToken().getPosition().format());
@@ -94,7 +94,7 @@ public class Call extends Expression implements Statement {
 			
 			for (int i = 0; i < arguments.size(); i++) {
 				String name = functionDefinition.parameterNames().get(i);
-				BiteObject<?> argument = arguments.get(i).getValue();
+				BiteObject<?> argument = arguments.get(i).getValue().cast(argumentTypes.get(i).getBaseType());
 				record.store(name, argument);
 			}
 			
@@ -105,6 +105,7 @@ public class Call extends Expression implements Statement {
 			BiteObject<?> object = expression.getValue();
 			ActivationRecord record = CallStack.current().createRecord(ScopeType.FUNCTION, symbol.getContext());
 			
+			//No casting here because operators are exact
 			for (int i = 0; i < arguments.size(); i++) {
 				String name = symbol.getOperandNames().get(i);
 				BiteObject<?> argument = i > 0 ? arguments.get(i).getValue() : object;

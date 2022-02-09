@@ -91,4 +91,23 @@ public class TypeSymbol extends Symbol {
 	public void setStaticField(String name, BiteObject<?> object) {
 		staticSubFields.put(name, object);
 	}
+	
+	public boolean canAutoCast(TypeSymbol other) {
+		return super.equals(other) || (this == INTEGER && other == FLOAT);
+	}
+	
+	public boolean canCast(TypeSymbol other) {
+		return canAutoCast(other) || (this == FLOAT && other == INTEGER);
+	}
+	
+	public boolean equalsExact(TypeSymbol other) {
+		return super.equals(other);
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof TypeSymbol that)
+			return canAutoCast(that);
+		return super.equals(o);
+	}
 }

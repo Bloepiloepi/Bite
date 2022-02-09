@@ -1,6 +1,7 @@
 package io.github.bloepiloepi.bite.runtime.object;
 
 import io.github.bloepiloepi.bite.semantic.symbol.TypeInstanceSymbol;
+import io.github.bloepiloepi.bite.semantic.symbol.TypeSymbol;
 
 import java.util.Objects;
 
@@ -13,6 +14,16 @@ public class BiteObject<T> {
 	
 	public T getValue() {
 		return value;
+	}
+	
+	public BiteObject<?> cast(TypeSymbol symbol) {
+		if (symbol == TypeSymbol.INTEGER) {
+			return new BiteObject<>(((Number) value).intValue());
+		} else if (symbol == TypeSymbol.FLOAT) {
+			return new BiteObject<>(((Number) value).floatValue());
+		} else {
+			return this;
+		}
 	}
 	
 	@Override

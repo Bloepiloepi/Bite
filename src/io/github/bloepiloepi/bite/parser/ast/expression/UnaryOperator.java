@@ -47,6 +47,7 @@ public class UnaryOperator extends Expression {
 	
 	@Override
 	public BiteObject<?> getValue() {
+		//No casting here because operators are exact
 		BiteObject<?> object = expression.getValue();
 		
 		ActivationRecord record = CallStack.current().push(ScopeType.FUNCTION, symbol.getContext());

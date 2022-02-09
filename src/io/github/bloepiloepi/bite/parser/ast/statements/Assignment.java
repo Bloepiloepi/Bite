@@ -47,38 +47,38 @@ public class Assignment extends Expression implements Statement {
 	private OperatorSymbol symbol;
 	private int scopeLevel = -1;
 	private boolean overloaded = false;
+	private TypeInstanceSymbol leftType;
 	
 	@Override
 	public void analyze() {
 		rightHand.analyze();
 		leftHand.analyze();
 		
-		TypeInstanceSymbol leftReturnType;
 		if (leftHand instanceof Declaration declaration) {
 			Variable variable = new Variable(declaration.getToken(), declaration.getName());
 			variable.analyze();
-			leftReturnType = variable.getReturnType(false);
+			leftType = variable.getReturnType(false);
 		} else if (leftHand instanceof Variable variable) {
 			scopeLevel = variable.getSymbol().getScopeLevel();
-			leftReturnType = leftHand.getReturnType(false);
+			leftType = leftHand.getReturnType(false);
 		} else if (leftHand instanceof BinaryOperator op && op.getOperator() == Operator.DOT) {
-			leftReturnType = leftHand.getReturnType(false);
+			leftType = leftHand.getReturnType(false);
 		} else if (leftHand instanceof BinaryOperator op && op.getOperator() == Operator.LIST_ACCESS) {
-			leftReturnType = leftHand.getReturnType(true);
+			leftType = leftHand.getReturnType(true);
 		} else {
 			Main.error("Cannot assign a value: " + getToken().getPosition().format());
 			return;
 		}
-		if (!leftReturnType.isComplete()) {
-			leftReturnType = infer();
+		if (!leftType.isComplete()) {
+			leftType = infer();
 		}
 		
 		TypeInstanceSymbol rightReturnType = rightHand.getReturnType(true);
-		List<TypeInstanceSymbol> operands = List.of(leftReturnType, rightReturnType);
+		List<TypeInstanceSymbol> operands = List.of(leftType, rightReturnType);
 		symbol = SemanticAnalyzer.current.currentScope.lookupOperator(Operator.ASSIGN, operands, false);
 		if (symbol == null) {
-			if (!leftReturnType.equals(rightReturnType)) {
-				Main.error("Invalid type, '" + leftReturnType.getName() + "' required: " + rightHand.getToken().getPosition().format());
+			if (!leftType.equals(rightReturnType)) {
+				Main.error("Invalid type, '" + leftType.getName() + "' required: " + rightHand.getToken().getPosition().format());
 			}
 		} else {
 			overloaded = true;
@@ -114,8 +114,9 @@ public class Assignment extends Expression implements Statement {
 		//Calculate value to store
 		BiteObject<?> value;
 		if (!overloaded) {
-			value = rightHand.getValue();
+			value = rightHand.getValue().cast(leftType.getBaseType());
 		} else {
+			//No casting here because operators are exact
 			BiteObject<?> right = rightHand.getValue();
 			
 			ActivationRecord record = CallStack.current().push(ScopeType.FUNCTION, symbol.getContext());

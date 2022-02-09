@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 
 public class NativeOperators {
 	private static final List<String> operandNames = List.of("op1", "op2");
-	//TODO add the statement lists later
 	
 	public static void addToTable(ScopedSymbolTable table) {
 		addToTable(table, Operator.PLUS, List.of(), NativeTypes.INTEGER_INSTANCE, record -> {
@@ -26,7 +25,7 @@ public class NativeOperators {
 			CallStack.current().peek().return_(BiteObject.floatValue((Float) record.getObject("op1", -1).getValue() + (Integer) record.getObject("op2", -1).getValue()));
 		}, NativeTypes.FLOAT_INSTANCE, NativeTypes.INTEGER_INSTANCE);
 		addToTable(table, Operator.PLUS, List.of(), NativeTypes.FLOAT_INSTANCE, record -> {
-			CallStack.current().peek().return_(BiteObject.floatValue((Float) record.getObject("op1", -1).getValue() + (Integer) record.getObject("op2", -1).getValue()));
+			CallStack.current().peek().return_(BiteObject.floatValue((Float) record.getObject("op1", -1).getValue() + (Float) record.getObject("op2", -1).getValue()));
 		}, NativeTypes.FLOAT_INSTANCE, NativeTypes.FLOAT_INSTANCE);
 		
 		addToTable(table, Operator.PLUS, List.of(), NativeTypes.INTEGER_INSTANCE, record -> {

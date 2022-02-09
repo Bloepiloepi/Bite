@@ -19,6 +19,7 @@ public class ListDefinition extends Expression {
 		this.values = values;
 	}
 	
+	private TypeInstanceSymbol contentType;
 	private TypeInstanceSymbol returnType;
 	
 	@Override
@@ -28,7 +29,7 @@ public class ListDefinition extends Expression {
 	
 	@Override
 	public void analyze() {
-		TypeInstanceSymbol contentType = NativeTypes.UNKNOWN_INSTANCE;
+		contentType = NativeTypes.UNKNOWN_INSTANCE;
 		
 		for (Expression expression : values) {
 			expression.analyze();
@@ -49,7 +50,7 @@ public class ListDefinition extends Expression {
 		List<BiteObject<?>> list = new ArrayList<>();
 		
 		for (Expression expression : values)
-			list.add(expression.getValue());
+			list.add(expression.getValue().cast(contentType.getBaseType()));
 		
 		return BiteObject.builtinObject(list);
 	}

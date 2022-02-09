@@ -8,8 +8,6 @@ import io.github.bloepiloepi.bite.parser.ast.expression.Variable;
 import io.github.bloepiloepi.bite.runtime.stack.CallStack;
 import io.github.bloepiloepi.bite.semantic.scope.SemanticAnalyzer;
 import io.github.bloepiloepi.bite.semantic.symbol.TypeInstanceSymbol;
-import io.github.bloepiloepi.bite.semantic.symbol.TypeSymbol;
-import io.github.bloepiloepi.bite.semantic.symbol.VariableSymbol;
 
 import java.util.List;
 
