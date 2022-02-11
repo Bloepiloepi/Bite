@@ -137,18 +137,15 @@ public class Lexer {
 			
 			if (currentChar == '/') {
 				Character peek = this.peek();
-				if (peek == null) {
-					next();
-					continue;
+				if (peek != null) {
+					if (peek == '*') {
+						skipBlockComment();
+						continue;
+					} else if (peek == '/') {
+						skipLineComment();
+						continue;
+					}
 				}
-				
-				if (peek == '*') {
-					skipBlockComment();
-				} else if (peek == '/') {
-					skipLineComment();
-				}
-				
-				continue;
 			}
 			
 			if (Character.isDigit(currentChar)) {
