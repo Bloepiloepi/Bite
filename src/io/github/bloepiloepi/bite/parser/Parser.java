@@ -98,8 +98,22 @@ public class Parser {
 		} else if (currentToken.getType() == TokenType.MINUS) {
 			eat(TokenType.MINUS);
 			expression = new UnaryOperator(token, factor(), Operator.MINUS);
+		} else if (currentToken.getType() == TokenType.DOUBLE_PLUS) {
+			eat(TokenType.DOUBLE_PLUS);
+			expression = new IncrementOperator(token, factor(), false, true);
+		} else if (currentToken.getType() == TokenType.DOUBLE_MINUS) {
+			eat(TokenType.DOUBLE_MINUS);
+			expression = new IncrementOperator(token, factor(), false, false);
 		} else {
 			expression = value();
+		}
+		
+		if (currentToken.getType() == TokenType.DOUBLE_PLUS) {
+			expression = new IncrementOperator(currentToken, expression, true, true);
+			eat(TokenType.DOUBLE_PLUS);
+		} else if (currentToken.getType() == TokenType.DOUBLE_MINUS) {
+			expression = new IncrementOperator(currentToken, expression, true, false);
+			eat(TokenType.DOUBLE_MINUS);
 		}
 		
 		return expression;
@@ -225,15 +239,20 @@ public class Parser {
 	}
 	
 	private Expression assignExpression() {
-		Expression expression = expression();
+		Expression leftHand = expression();
 		
-		if (currentToken.getType() == TokenType.ASSIGN) {
+		if (isAssignToken(currentToken.getType())) {
 			Token token = currentToken;
-			eat(TokenType.ASSIGN);
-			expression = new Assignment(token, expression, expression());
+			eat(currentToken.getType());
+			Expression rightHand = expression();
+			if (token.getType() != TokenType.ASSIGN) {
+				rightHand = new BinaryOperator(token, leftHand, rightHand, getAssignOperator(token.getType()));
+			}
+			
+			leftHand = new Assignment(token, leftHand, rightHand);
 		}
 		
-		return expression;
+		return leftHand;
 	}
 	
 	private Statement declarationOrAssignment() {
@@ -244,7 +263,7 @@ public class Parser {
 			secondPeek = 3;
 		}
 		
-		if (peekToken.getType() == TokenType.DOT || peekToken.getType() == TokenType.ASSIGN || lexer.peekToken(secondPeek).getType() == TokenType.ASSIGN) {
+		if (peekToken.getType() == TokenType.DOT || isAssignToken(peekToken.getType()) || lexer.peekToken(secondPeek).getType() == TokenType.ASSIGN) {
 			return assignment();
 		} else {
 			return declaration();
@@ -339,17 +358,39 @@ public class Parser {
 		
 		if (currentToken.getType() == TokenType.GLOBAL) {
 			leftHand = declaration();
-		} else if (peekToken.getType() == TokenType.ASSIGN || peekToken.getType() == TokenType.DOT) {
+		} else if (isAssignToken(peekToken.getType()) || peekToken.getType() == TokenType.DOT) {
 			leftHand = dot();
 		} else {
 			leftHand = declaration();
 		}
 		
 		Token token = currentToken;
-		eat(TokenType.ASSIGN);
+		if (isAssignToken(token.getType())) {
+			eat(currentToken.getType());
+		} else {
+			eat(TokenType.ASSIGN);
+		}
 		Expression rightHand = expression();
+		if (token.getType() != TokenType.ASSIGN) {
+			rightHand = new BinaryOperator(token, leftHand, rightHand, getAssignOperator(token.getType()));
+		}
 		
 		return new Assignment(token, leftHand, rightHand);
+	}
+	
+	private boolean isAssignToken(TokenType type) {
+		return type == TokenType.ASSIGN
+				|| type == TokenType.PLUS_ASSIGN || type == TokenType.MINUS_ASSIGN
+				|| type == TokenType.DIVIDE_ASSIGN || type == TokenType.MULTIPLY_ASSIGN;
+	}
+	
+	private Operator getAssignOperator(TokenType type) {
+		return switch (type) {
+			case MINUS_ASSIGN -> Operator.MINUS;
+			case DIVIDE_ASSIGN -> Operator.DIVIDE;
+			case MULTIPLY_ASSIGN -> Operator.MULTIPLY;
+			default -> Operator.PLUS;
+		};
 	}
 	
 	private OperatorDefinition operator() {

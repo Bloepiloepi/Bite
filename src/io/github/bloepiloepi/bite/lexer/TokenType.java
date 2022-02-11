@@ -4,10 +4,16 @@ import java.util.HashMap;
 
 public enum TokenType {
 	//Operators
-	PLUS("+"),
-	MINUS("-"),
-	DIVIDE("/"),
-	MULTIPLY("*"),
+	PLUS("+", true),
+	DOUBLE_PLUS("++"),
+	PLUS_ASSIGN("+="),
+	MINUS("-", true),
+	DOUBLE_MINUS("--"),
+	MINUS_ASSIGN("-="),
+	DIVIDE("/", true),
+	DIVIDE_ASSIGN("/="),
+	MULTIPLY("*", true),
+	MULTIPLY_ASSIGN("*="),
 	EQUALS("=="),
 	GREATER_THAN(">"),
 	LESS_THAN("<"),
