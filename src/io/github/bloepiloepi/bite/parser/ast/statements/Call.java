@@ -19,9 +19,9 @@ import java.util.List;
 
 public class Call extends Expression implements Statement {
 	private final Expression expression;
-	private final ArrayList<Expression> arguments;
+	private final List<Expression> arguments;
 	
-	public Call(Token token, Expression expression, ArrayList<Expression> arguments) {
+	public Call(Token token, Expression expression, List<Expression> arguments) {
 		super(token);
 		this.expression = expression;
 		this.arguments = arguments;
@@ -47,27 +47,12 @@ public class Call extends Expression implements Statement {
 			returnType = type.getGenerics().get(0);
 			
 			argumentTypes = func.getParameterTypes();
-			if (arguments.size() > argumentTypes.size()) {
-				Main.error("Too many arguments: " + getToken().getPosition().format());
-			} else if (arguments.size() < argumentTypes.size()) {
-				Main.error("Not enough arguments: " + getToken().getPosition().format());
-			}
-			
-			for (int i = 0; i < arguments.size(); i++) {
-				Expression argument = arguments.get(i);
-				argument.analyze();
-				TypeInstanceSymbol argumentType = argument.getReturnType(true);
-				TypeInstanceSymbol required = argumentTypes.get(i);
-				
-				if (!argumentType.equals(required)) {
-					Main.error("Invalid type, '" + required.getName() + "' required: " + argument.getToken().getPosition().format());
-				}
-			}
+			checkCall(argumentTypes, arguments, getToken());
 			
 			return;
 		}
 		
-		ArrayList<TypeInstanceSymbol> operands = new ArrayList<>();
+		List<TypeInstanceSymbol> operands = new ArrayList<>();
 		operands.add(type);
 		
 		for (Expression argument : arguments) {
@@ -84,6 +69,25 @@ public class Call extends Expression implements Statement {
 		}
 		
 		returnType = symbol.getReturnType(operands);
+	}
+	
+	public static void checkCall(List<TypeInstanceSymbol> argumentTypes, List<Expression> arguments, Token errorToken) {
+		if (arguments.size() > argumentTypes.size()) {
+			Main.error("Too many arguments: " + errorToken.getPosition().format());
+		} else if (arguments.size() < argumentTypes.size()) {
+			Main.error("Not enough arguments: " + errorToken.getPosition().format());
+		}
+		
+		for (int i = 0; i < arguments.size(); i++) {
+			Expression argument = arguments.get(i);
+			argument.analyze();
+			TypeInstanceSymbol argumentType = argument.getReturnType(true);
+			TypeInstanceSymbol required = argumentTypes.get(i);
+			
+			if (!argumentType.equals(required)) {
+				Main.error("Invalid type, '" + required.getName() + "' required: " + argument.getToken().getPosition().format());
+			}
+		}
 	}
 	
 	@Override

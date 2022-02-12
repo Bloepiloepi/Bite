@@ -460,6 +460,14 @@ public class Parser {
 		eat(TokenType.STRUCT);
 		String name = currentToken.getValue();
 		eat(TokenType.IDENTIFIER);
+		
+		ArrayList<Declaration> parameters;
+		if (currentToken.getType() == TokenType.LPAREN) {
+			parameters = parameterList();
+		} else {
+			parameters = new ArrayList<>();
+		}
+		
 		eat(TokenType.BRACE_OPEN);
 		
 		ArrayList<Declaration> declarations = new ArrayList<>();
@@ -492,7 +500,7 @@ public class Parser {
 			}
 		}
 		
-		return new StructureDefinition(token, declarations, statements, name, generics);
+		return new StructureDefinition(token, parameters, declarations, statements, name, generics);
 	}
 	
 	private ExpressionFunctionDefinition function() {
@@ -518,7 +526,16 @@ public class Parser {
 		Token token = currentToken;
 		eat(TokenType.NEW);
 		
-		return new InstantiationStatement(token, typeSpecification(false));
+		TypeSpecification type = typeSpecification(false);
+		
+		ArrayList<Expression> arguments;
+		if (currentToken.getType() == TokenType.LPAREN) {
+			arguments = argumentList();
+		} else {
+			arguments = new ArrayList<>();
+		}
+		
+		return new InstantiationStatement(token, type, arguments);
 	}
 	
 	private ListDefinition list() {

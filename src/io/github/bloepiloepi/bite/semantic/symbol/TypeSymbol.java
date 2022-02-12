@@ -1,8 +1,7 @@
 package io.github.bloepiloepi.bite.semantic.symbol;
 
-import io.github.bloepiloepi.bite.parser.ast.StatementList;
+import io.github.bloepiloepi.bite.parser.ast.definition.FunctionDefinition;
 import io.github.bloepiloepi.bite.runtime.object.BiteObject;
-import io.github.bloepiloepi.bite.runtime.stack.ActivationRecord;
 import io.github.bloepiloepi.bite.runtime.stack.CallStack;
 
 import java.util.HashMap;
@@ -17,8 +16,8 @@ public class TypeSymbol extends Symbol {
 	public static final TypeSymbol STRING = new TypeSymbol("string");
 	public static final TypeSymbol BOOLEAN = new TypeSymbol("boolean");
 	//TODO constructors
-	public static final TypeSymbol FUNCTION = new TypeSymbol("function", Map.of(), Map.of(), StatementList.EMPTY, List.of("returnType"));
-	public static final TypeSymbol LIST = new TypeSymbol("list", Map.of(), Map.of(), StatementList.EMPTY, List.of("contentType"));
+	public static final TypeSymbol FUNCTION = new TypeSymbol("function", Map.of(), Map.of(), List.of("returnType"), true);
+	public static final TypeSymbol LIST = new TypeSymbol("list", Map.of(), Map.of(), List.of("contentType"), true);
 	
 	//Only expression values
 	public static final TypeSymbol NULL = new TypeSymbol("null");
@@ -29,26 +28,27 @@ public class TypeSymbol extends Symbol {
 	private final Map<String, Symbol> subSymbols;
 	private final Map<String, Symbol> staticSubSymbols;
 	private final Map<String, BiteObject<?>> staticSubFields = new HashMap<>();
-	private final StatementList statements;
 	private final List<String> generics;
+	private final boolean primitive;
 	
-	private ActivationRecord context = CallStack.global;
+	private List<TypeInstanceSymbol> constructorArgumentTypes;
+	private FunctionDefinition constructor;
 	
 	private final TypeInstanceSymbol staticType = new TypeInstanceSymbol(this, List.of());
 	
-	public TypeSymbol(String name, Map<String, Symbol> subSymbols, Map<String, Symbol> staticSubSymbols, StatementList statements, List<String> generics) {
+	public TypeSymbol(String name, Map<String, Symbol> subSymbols, Map<String, Symbol> staticSubSymbols, List<String> generics, boolean primitive) {
 		super(name);
 		this.subSymbols = subSymbols;
 		this.staticSubSymbols = staticSubSymbols;
-		this.statements = statements;
 		this.generics = generics;
+		this.primitive = primitive;
 		
 		//Store the type structure
 		CallStack.global.store(name, BiteObject.structure(staticType));
 	}
 	
 	public TypeSymbol(String name) {
-		this(name, new HashMap<>(), new HashMap<>(), StatementList.EMPTY, List.of());
+		this(name, new HashMap<>(), new HashMap<>(), List.of(), true);
 	}
 	
 	public Map<String, Symbol> getSubSymbols() {
@@ -59,20 +59,28 @@ public class TypeSymbol extends Symbol {
 		return staticSubSymbols;
 	}
 	
-	public StatementList getStatements() {
-		return statements;
-	}
-	
 	public List<String> getFormalGenerics() {
 		return generics;
 	}
 	
-	public ActivationRecord getContext() {
-		return context;
+	public boolean isPrimitive() {
+		return primitive;
 	}
 	
-	public void setContext(ActivationRecord context) {
-		this.context = context;
+	public List<TypeInstanceSymbol> getConstructorArgumentTypes() {
+		return constructorArgumentTypes;
+	}
+	
+	public void setConstructorArgumentTypes(List<TypeInstanceSymbol> constructorArgumentTypes) {
+		this.constructorArgumentTypes = constructorArgumentTypes;
+	}
+	
+	public FunctionDefinition getConstructor() {
+		return constructor;
+	}
+	
+	public void setConstructor(FunctionDefinition constructor) {
+		this.constructor = constructor;
 	}
 	
 	@Override

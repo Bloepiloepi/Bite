@@ -20,14 +20,16 @@ import java.util.List;
 public class StructureDefinition implements Definition, Statement {
 	private final Token token;
 	
+	private final List<Declaration> parameters;
 	private final List<Declaration> declarations;
 	private final StatementList statements;
 	
 	private final String name;
 	private final List<String> generics;
 	
-	public StructureDefinition(Token token, List<Declaration> declarations, StatementList statements, String name, List<String> generics) {
+	public StructureDefinition(Token token, List<Declaration> parameters, List<Declaration> declarations, StatementList statements, String name, List<String> generics) {
 		this.token = token;
+		this.parameters = parameters;
 		this.declarations = declarations;
 		this.statements = statements;
 		this.name = name;
@@ -49,10 +51,19 @@ public class StructureDefinition implements Definition, Statement {
 			SemanticAnalyzer.current.currentScope.insert(new GenericTypeSymbol(generic), token);
 		}
 		for (Declaration declaration : declarations) {
+			declaration.setOnStructure(true);
 			declaration.analyze();
 		}
 		
-		type = new TypeSymbol(name, SemanticAnalyzer.current.currentScope.getSymbols(), SemanticAnalyzer.current.currentScope.getGlobalSymbols(), statements, generics);
+		type = new TypeSymbol(name, SemanticAnalyzer.current.currentScope.getSymbols(), SemanticAnalyzer.current.currentScope.getGlobalSymbols(), generics, false);
+		
+		List<TypeInstanceSymbol> parameterTypes = new ArrayList<>();
+		for (Declaration parameter : parameters) {
+			parameter.analyze();
+			parameterTypes.add(parameter.getType().getSymbol());
+		}
+		
+		type.setConstructorArgumentTypes(parameterTypes);
 		SemanticAnalyzer.current.currentScope.getEnclosingScope().insert(type, token);
 		
 		List<TypeInstanceSymbol> genericSymbols = new ArrayList<>();
@@ -82,6 +93,11 @@ public class StructureDefinition implements Definition, Statement {
 		}
 		record.store(name, staticStructure);
 		
-		type.setContext(record);
+		List<String> parameterNames = new ArrayList<>();
+		for (Declaration declaration : parameters) {
+			parameterNames.add(declaration.getName());
+		}
+		
+		type.setConstructor(new FunctionDefinition(parameterNames, statements, record));
 	}
 }

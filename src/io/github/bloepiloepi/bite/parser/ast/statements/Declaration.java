@@ -16,6 +16,7 @@ public class Declaration extends Expression implements Statement {
 	private final String name;
 	
 	private final boolean global;
+	private boolean onStructure = false;
 	
 	public Declaration(TypeSpecification type, String name, boolean global) {
 		super(type.getToken());
@@ -30,6 +31,10 @@ public class Declaration extends Expression implements Statement {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public void setOnStructure(boolean onStructure) {
+		this.onStructure = onStructure;
 	}
 	
 	@Override
@@ -57,15 +62,14 @@ public class Declaration extends Expression implements Statement {
 	@Override
 	public void analyze() {
 		//TODO also check parent scope in case of control scopes (if, loops)
-		if (global && SemanticAnalyzer.current.currentScope.getScopeType() != ScopeType.FILE && SemanticAnalyzer.current.currentScope.getScopeType() != ScopeType.STRUCTURE) {
+		if (global && SemanticAnalyzer.current.currentScope.getScopeType() != ScopeType.FILE && !onStructure) {
 			Main.error("Global is not allowed here: " + getToken().getPosition().format());
 		}
 		
-		boolean field = !global && SemanticAnalyzer.current.currentScope.getScopeType() == ScopeType.STRUCTURE;
-		variableSymbol = createVariableSymbol(field);
+		variableSymbol = createVariableSymbol(!global && onStructure);
 		
 		if (global) {
-			if (SemanticAnalyzer.current.currentScope.getScopeType() == ScopeType.STRUCTURE) {
+			if (onStructure) {
 				SemanticAnalyzer.current.currentScope.insertGlobal(variableSymbol, getToken());
 			} else {
 				SemanticAnalyzer.globalScope.insert(variableSymbol, getToken());
